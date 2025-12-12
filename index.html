@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Item Detection Playground</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">Visual QA</p>
+      <h1>Detect items in uploaded photos</h1>
+      <p class="lede">Upload an image, choose which item types to count, and review the annotated results.</p>
+    </div>
+  </header>
+
+  <main class="app-grid">
+    <section class="card" aria-labelledby="upload-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Step 1</p>
+          <h2 id="upload-title">Upload image</h2>
+          <p class="hint">Use drag &amp; drop or the file picker. Images stay in the browser.</p>
+        </div>
+        <label class="button ghost" for="file-input">Pick image</label>
+      </div>
+
+      <div class="dropzone" id="dropzone" aria-label="Upload image by drag and drop">
+        <input id="file-input" type="file" accept="image/*" hidden />
+        <div class="dropzone-inner">
+          <div class="drop-icon" aria-hidden="true">📂</div>
+          <p class="drop-title">Drag &amp; drop an image</p>
+          <p class="drop-subtitle">or click &ldquo;Pick image&rdquo; above</p>
+        </div>
+        <p class="file-name" id="file-name">No file selected</p>
+      </div>
+      <div class="preview" id="image-preview" hidden>
+        <img id="preview-image" alt="Uploaded preview" />
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="selection-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Step 2</p>
+          <h2 id="selection-title">Select item types</h2>
+          <p class="hint">Choose which items you want to count. You can re-run detection with new classes later without re-uploading.</p>
+        </div>
+      </div>
+      <form class="class-picker" id="class-picker" aria-label="Item type selector">
+        <label class="checkbox">
+          <input type="checkbox" name="classes" value="Boxes" checked />
+          <span>Boxes</span>
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" name="classes" value="Pallets" />
+          <span>Pallets</span>
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" name="classes" value="Damaged" />
+          <span>Damaged items</span>
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" name="classes" value="Labels" />
+          <span>Labels</span>
+        </label>
+      </form>
+      <div class="inline-actions">
+        <button class="button" id="detect-button" disabled>Detect items</button>
+        <button class="button ghost" id="clear-selection" type="button">Clear selections</button>
+      </div>
+      <p class="status" id="status-line">Waiting for an image…</p>
+    </section>
+
+    <section class="card results" aria-labelledby="results-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Step 3</p>
+          <h2 id="results-title">Results</h2>
+          <p class="hint">View detections, counts, and export the data.</p>
+        </div>
+        <div class="inline-actions">
+          <button class="button ghost" id="retry-button" type="button" hidden>Retry detection</button>
+          <button class="button ghost" id="export-button" type="button" disabled>Export results</button>
+        </div>
+      </div>
+
+      <div class="alert" id="error-banner" role="alert" hidden></div>
+      <div class="loader" id="loader" hidden>
+        <div class="spinner" aria-hidden="true"></div>
+        <p>Running detection…</p>
+      </div>
+
+      <div class="result-grid">
+        <div class="annotated" id="annotated-wrapper" hidden>
+          <div class="image-frame">
+            <img id="result-image" alt="Annotated result" />
+            <canvas id="overlay"></canvas>
+          </div>
+        </div>
+        <div class="metrics" id="metrics" hidden>
+          <div class="metric-card">
+            <p class="eyebrow">Total</p>
+            <p class="count" id="total-count">0</p>
+          </div>
+          <div class="metric-card">
+            <p class="eyebrow">Per class</p>
+            <ul id="class-counts" class="class-counts"></ul>
+          </div>
+          <div class="metric-card">
+            <p class="eyebrow">Last run</p>
+            <p id="last-run">–</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Drag in a new image at any time to start over. Change class selections to re-run detection without re-uploading.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
