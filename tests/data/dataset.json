@@ -1,0 +1,10 @@
+[
+  {
+    "ground_truth": ["red", "blue", "blue"],
+    "predictions": ["red", "blue"]
+  },
+  {
+    "ground_truth": ["green", "green"],
+    "predictions": ["green", "blue", "green"]
+  }
+]
