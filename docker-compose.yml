@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  api:
+    build: .
+    image: video-analysis-api:local
+    ports:
+      - "8000:8000"
+    environment:
+      API_KEY: ${API_KEY:-dev-key}
+      BASIC_AUTH_USER: ${BASIC_AUTH_USER:-dev}
+      BASIC_AUTH_PASSWORD: ${BASIC_AUTH_PASSWORD:-devpass}
+      UPLOAD_MAX_MB: ${UPLOAD_MAX_MB:-50}
+      VIDEO_PROCESS_TIMEOUT: ${VIDEO_PROCESS_TIMEOUT:-120}
+      STATIC_CACHE_SECONDS: ${STATIC_CACHE_SECONDS:-31536000}
+    volumes:
+      - ./static:/app/static:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
