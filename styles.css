@@ -146,6 +146,15 @@ select {
   display: flex;
   gap: 16px;
   align-items: flex-start;
+  justify-content: space-between;
+}
+
+.legend-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex: 1;
 }
 
 .legend-title {
@@ -153,10 +162,18 @@ select {
   min-width: 70px;
 }
 
+.legend-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: right;
+}
+
 #countsList {
   margin: 0;
   padding-left: 18px;
   color: #cbd5e1;
+  flex: 1;
 }
 
 .alert {

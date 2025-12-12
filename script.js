@@ -5,6 +5,7 @@ const errorBanner = document.getElementById('errorBanner');
 const canvas = document.getElementById('previewCanvas');
 const countsList = document.getElementById('countsList');
 const statusChip = document.getElementById('statusChip');
+const resultMeta = document.getElementById('resultMeta');
 
 const ctx = canvas.getContext('2d');
 const MAX_CANVAS_WIDTH = 1200;
@@ -29,11 +30,16 @@ function showError(message) {
   errorBanner.textContent = message;
   errorBanner.classList.remove('hidden');
   setStatus('Error', 'error');
+  setResultMeta('Resolve the error and retry detection.');
 }
 
 function clearError() {
   errorBanner.textContent = '';
   errorBanner.classList.add('hidden');
+}
+
+function setResultMeta(text) {
+  resultMeta.textContent = text;
 }
 
 function isSupported(file) {
@@ -102,12 +108,13 @@ function computeCountsFromBoxes(boxes = []) {
   }, {});
 }
 
-function renderDetections(image, data) {
+function renderDetections(image, data, sourceLabel = 'live') {
   const boxes = Array.isArray(data?.boxes) ? data.boxes : [];
   const counts = data?.counts || computeCountsFromBoxes(boxes);
   drawBoxes(image, boxes);
   renderCounts(counts);
   setStatus('Detection complete');
+  setResultMeta(sourceLabel === 'mock' ? 'Showing mock results (API unavailable).' : 'Live API response rendered.');
 }
 
 function loadImageFromFile(file) {
@@ -129,6 +136,7 @@ function updateCountsPlaceholder() {
   const li = document.createElement('li');
   li.textContent = 'Run detection to see results.';
   countsList.appendChild(li);
+  setResultMeta('Awaiting a detection run.');
 }
 
 async function handleFileChange(event) {
@@ -140,18 +148,22 @@ async function handleFileChange(event) {
     fileInput.value = '';
     resetCanvas();
     updateCountsPlaceholder();
+    detectButton.disabled = true;
     return;
   }
 
   clearError();
   setStatus('Image ready');
+  setResultMeta('Image loaded. Choose target and run detection.');
   try {
     currentImage = await loadImageFromFile(file);
     currentFile = file;
     drawBaseImage(currentImage);
     updateCountsPlaceholder();
+    detectButton.disabled = false;
   } catch (err) {
     showError(err.message);
+    detectButton.disabled = true;
   }
 }
 
@@ -205,16 +217,17 @@ async function runDetection() {
   clearError();
   setStatus('Detecting...', 'active');
   detectButton.disabled = true;
+  setResultMeta('Running detection...');
 
   try {
     const target = targetSelect.value;
     const data = await callDetectionApi(currentFile, target);
-    renderDetections(currentImage, data);
+    renderDetections(currentImage, data, data?.source || 'live');
   } catch (err) {
     showError(err.message);
     // Provide a quick mock fallback to demonstrate the overlay even if the API fails.
     const demo = await mockDetection(currentImage);
-    renderDetections(currentImage, demo);
+    renderDetections(currentImage, demo, 'mock');
     setStatus('Mocked results (API unreachable)', 'error');
   } finally {
     detectButton.disabled = false;

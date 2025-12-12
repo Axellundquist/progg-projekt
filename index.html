@@ -21,7 +21,7 @@
       <div class="upload-row">
         <label for="fileInput" class="upload-label">Upload image</label>
         <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" />
-        <button id="detectButton" class="primary">Run detection</button>
+        <button id="detectButton" class="primary" disabled>Run detection</button>
       </div>
       <div class="selector-row">
         <label for="targetSelect">Item selector</label>
@@ -42,7 +42,10 @@
         <canvas id="previewCanvas" width="960" height="540">Your browser does not support canvas.</canvas>
       </div>
       <div class="legend">
-        <div class="legend-title">Counts</div>
+        <div class="legend-header">
+          <div class="legend-title">Counts</div>
+          <p id="resultMeta" class="legend-meta" aria-live="polite"></p>
+        </div>
         <ul id="countsList"></ul>
       </div>
     </section>
