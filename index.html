@@ -26,12 +26,12 @@
         <label class="button ghost" for="file-input">Pick image</label>
       </div>
 
-      <div class="dropzone" id="dropzone" aria-label="Upload image by drag and drop">
+      <div class="dropzone" id="dropzone" aria-label="Upload image by drag and drop or click to browse">
         <input id="file-input" type="file" accept="image/*" hidden />
         <div class="dropzone-inner">
           <div class="drop-icon" aria-hidden="true">📂</div>
           <p class="drop-title">Drag &amp; drop an image</p>
-          <p class="drop-subtitle">or click &ldquo;Pick image&rdquo; above</p>
+          <p class="drop-subtitle">or click to browse</p>
         </div>
         <p class="file-name" id="file-name">No file selected</p>
       </div>
@@ -107,10 +107,12 @@
           <div class="metric-card">
             <p class="eyebrow">Per class</p>
             <ul id="class-counts" class="class-counts"></ul>
+            <p class="status" id="no-detections" hidden>No detections found for these classes.</p>
           </div>
           <div class="metric-card">
             <p class="eyebrow">Last run</p>
             <p id="last-run">–</p>
+            <p class="status" id="last-classes">Select classes and run detection.</p>
           </div>
         </div>
       </div>

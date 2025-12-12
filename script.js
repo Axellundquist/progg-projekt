@@ -16,13 +16,14 @@ const overlay = document.getElementById('overlay');
 const metrics = document.getElementById('metrics');
 const totalCount = document.getElementById('total-count');
 const classCounts = document.getElementById('class-counts');
+const noDetections = document.getElementById('no-detections');
 const lastRun = document.getElementById('last-run');
+const lastClasses = document.getElementById('last-classes');
 const exportButton = document.getElementById('export-button');
 
 let selectedFile = null;
 let imageDimensions = null;
 let currentDetections = [];
-let lastRequest = null;
 
 const randomFromSeed = (seedValue) => {
   let seed = seedValue;
@@ -43,7 +44,11 @@ function updateDetectAvailability() {
   const hasFile = Boolean(selectedFile);
   const hasClasses = getSelectedClasses().length > 0;
   detectButton.disabled = !(hasFile && hasClasses);
-  statusLine.textContent = hasFile ? 'Ready to detect when classes are selected.' : 'Waiting for an image…';
+  statusLine.textContent = hasFile
+    ? hasClasses
+      ? 'Ready to detect with the current selections.'
+      : 'Select at least one class to enable detection.'
+    : 'Waiting for an image…';
 }
 
 function resetResults() {
@@ -52,12 +57,20 @@ function resetResults() {
   exportButton.disabled = true;
   errorBanner.hidden = true;
   retryButton.hidden = true;
+  noDetections.hidden = true;
+  lastRun.textContent = '–';
+  lastClasses.textContent = 'Select classes and run detection.';
   overlay.getContext('2d').clearRect(0, 0, overlay.width, overlay.height);
   statusLine.textContent = 'Ready to detect when classes are selected.';
 }
 
 function handleFile(file) {
-  if (!file || !file.type.startsWith('image/')) {
+  if (!file) {
+    return;
+  }
+  if (!file.type.startsWith('image/')) {
+    statusLine.textContent = 'Please upload an image file (jpg, png, or gif).';
+    fileName.textContent = 'Unsupported file type';
     return;
   }
   selectedFile = file;
@@ -71,6 +84,13 @@ function handleFile(file) {
     imageDimensions = { width: previewImage.naturalWidth, height: previewImage.naturalHeight };
     updateDetectAvailability();
   };
+}
+
+function setFormDisabled(disabled) {
+  classPicker.querySelectorAll('input[name="classes"]').forEach((input) => {
+    input.disabled = disabled;
+  });
+  clearSelection.disabled = disabled;
 }
 
 function simulateDetection(classes) {
@@ -146,6 +166,10 @@ function showMetrics() {
     classCounts.appendChild(li);
   });
   lastRun.textContent = new Date().toLocaleTimeString();
+  lastClasses.textContent = currentDetections.length
+    ? `Classes: ${Object.keys(counts).join(', ')}`
+    : 'No detections returned.';
+  noDetections.hidden = currentDetections.length !== 0;
 }
 
 function setLoading(isLoading) {
@@ -153,6 +177,7 @@ function setLoading(isLoading) {
   detectButton.disabled = isLoading || !selectedFile || getSelectedClasses().length === 0;
   retryButton.hidden = isLoading;
   exportButton.disabled = isLoading || currentDetections.length === 0;
+  setFormDisabled(isLoading);
 }
 
 function setError(message) {
@@ -177,7 +202,6 @@ async function runDetection() {
   clearError();
   setLoading(true);
   statusLine.textContent = 'Detecting items…';
-  lastRequest = classes.join(', ');
 
   await new Promise((resolve) => setTimeout(resolve, 650));
 
@@ -189,6 +213,9 @@ async function runDetection() {
     drawDetections();
     showMetrics();
     statusLine.textContent = `Detected ${currentDetections.length} items for ${classes.join(', ')}.`;
+    if (currentDetections.length === 0) {
+      statusLine.textContent = 'No items detected for the selected classes.';
+    }
   } catch (error) {
     currentDetections = [];
     setError(error.message || 'Detection failed.');
@@ -249,6 +276,10 @@ dropzone.addEventListener('drop', (event) => {
   dropzone.classList.remove('dragover');
   const file = event.dataTransfer.files[0];
   handleFile(file);
+});
+
+dropzone.addEventListener('click', () => {
+  fileInput.click();
 });
 
 classPicker.addEventListener('change', () => {
