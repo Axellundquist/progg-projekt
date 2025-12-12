@@ -24,14 +24,17 @@
         <button id="detectButton" class="primary" disabled>Run detection</button>
       </div>
       <div class="selector-row">
-        <label for="targetSelect">Item selector</label>
-        <select id="targetSelect">
-          <option value="all">All items</option>
-          <option value="person">Person</option>
-          <option value="vehicle">Vehicle</option>
-          <option value="package">Package</option>
-        </select>
-        <span class="hint">Attach an example image to get the best results.</span>
+        <div class="selector-header">
+          <label for="targetSelect">Item selector</label>
+          <p class="hint" id="targetHint">Loading available classes…</p>
+        </div>
+        <div class="target-controls">
+          <div id="targetChips" class="chip-row" role="listbox" aria-label="Available classes"></div>
+          <div class="dropdown-wrap">
+            <label class="dropdown-label" for="targetSelect">Add or remove items</label>
+            <select id="targetSelect" multiple title="Select one or more packaging types"></select>
+          </div>
+        </div>
       </div>
       <p class="small">Supported formats: JPG, PNG, WEBP.</p>
       <div id="errorBanner" role="alert" aria-live="polite" class="alert hidden"></div>

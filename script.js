@@ -1,6 +1,8 @@
 const fileInput = document.getElementById('fileInput');
 const detectButton = document.getElementById('detectButton');
 const targetSelect = document.getElementById('targetSelect');
+const targetChips = document.getElementById('targetChips');
+const targetHint = document.getElementById('targetHint');
 const errorBanner = document.getElementById('errorBanner');
 const canvas = document.getElementById('previewCanvas');
 const countsList = document.getElementById('countsList');
@@ -12,6 +14,22 @@ const MAX_CANVAS_WIDTH = 1200;
 const DETECTION_API_URL = '/api/detect';
 const DETECTION_TIMEOUT = 8000;
 const SUPPORTED_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+const TARGETS_ENDPOINT = '/targets';
+const DEFAULT_TARGET_SELECTION = ['bottle', 'can', 'box_carton'];
+
+const FALLBACK_TARGETS = [
+  { value: 'bottle', label: 'Bottle', help_text: 'Plastic or glass bottles of any size.' },
+  { value: 'can', label: 'Can', help_text: 'Aluminum or steel cans for beverages or food.' },
+  { value: 'box_carton', label: 'Box / Carton', help_text: 'Cardboard boxes, cartons, or tetrapaks.' },
+  { value: 'bag_pouch', label: 'Bag / Pouch', help_text: 'Flexible bags, pouches, or sachets.' },
+  { value: 'cup', label: 'Cup', help_text: 'Disposable or reusable cups.' },
+  { value: 'lid', label: 'Lid', help_text: 'Plastic or paper lids and tops.' },
+  { value: 'utensil', label: 'Utensil', help_text: 'Single-use or reusable utensils.' },
+  { value: 'tray_plate', label: 'Tray / Plate', help_text: 'Serving trays, clamshells, or plates.' },
+];
+
+let availableTargets = [];
+let selectedTargets = new Set(DEFAULT_TARGET_SELECTION);
 
 let currentImage = null;
 let currentFile = null;
@@ -40,6 +58,10 @@ function clearError() {
 
 function setResultMeta(text) {
   resultMeta.textContent = text;
+}
+
+function updateTargetHint(text) {
+  targetHint.textContent = text;
 }
 
 function isSupported(file) {
@@ -139,6 +161,127 @@ function updateCountsPlaceholder() {
   setResultMeta('Awaiting a detection run.');
 }
 
+function getSelectedTargets() {
+  return Array.from(selectedTargets);
+}
+
+function syncDropdownSelection() {
+  Array.from(targetSelect.options).forEach((option) => {
+    option.selected = selectedTargets.has(option.value);
+  });
+}
+
+function syncChipSelection() {
+  const chips = targetChips.querySelectorAll('.chip');
+  chips.forEach((chip) => {
+    const isSelected = selectedTargets.has(chip.dataset.value);
+    chip.classList.toggle('selected', isSelected);
+    chip.setAttribute('aria-pressed', isSelected);
+  });
+}
+
+function updateSelectionHint(targets = availableTargets) {
+  const selectedLabels = targets
+    .filter((target) => selectedTargets.has(target.value))
+    .map((target) => target.label);
+  updateTargetHint(
+    selectedLabels.length
+      ? `${selectedLabels.length} selected: ${selectedLabels.join(', ')}`
+      : 'Select at least one class to run detection.'
+  );
+}
+
+function toggleTarget(value) {
+  if (selectedTargets.has(value)) {
+    if (selectedTargets.size === 1) {
+      return;
+    }
+    selectedTargets.delete(value);
+  } else {
+    selectedTargets.add(value);
+  }
+  syncDropdownSelection();
+  syncChipSelection();
+  updateSelectionHint();
+}
+
+function renderTargetChips(targets) {
+  targetChips.innerHTML = '';
+  targets.forEach((target) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'chip';
+    chip.dataset.value = target.value;
+    chip.title = target.help_text;
+    chip.textContent = target.label;
+    chip.setAttribute('role', 'option');
+    chip.setAttribute('aria-pressed', selectedTargets.has(target.value));
+    chip.addEventListener('click', () => toggleTarget(target.value));
+    targetChips.appendChild(chip);
+  });
+  syncChipSelection();
+}
+
+function renderTargetDropdown(targets) {
+  targetSelect.innerHTML = '';
+  targets.forEach((target) => {
+    const option = document.createElement('option');
+    option.value = target.value;
+    option.textContent = target.label;
+    option.title = target.help_text;
+    option.selected = selectedTargets.has(target.value);
+    targetSelect.appendChild(option);
+  });
+  targetSelect.addEventListener('change', (event) => {
+    const values = Array.from(event.target.selectedOptions).map((opt) => opt.value);
+    if (values.length === 0 && availableTargets.length) {
+      values.push(availableTargets[0].value);
+    }
+    selectedTargets = new Set(values);
+    syncChipSelection();
+    updateSelectionHint();
+  });
+  syncDropdownSelection();
+}
+
+function applyDefaultSelection(targets) {
+  const supportedValues = new Set(targets.map((target) => target.value));
+  const defaults = DEFAULT_TARGET_SELECTION.filter((value) => supportedValues.has(value));
+
+  if (defaults.length > 0) {
+    selectedTargets = new Set(defaults);
+    return;
+  }
+
+  if (targets.length) {
+    selectedTargets = new Set([targets[0].value]);
+  }
+}
+
+async function loadTargets() {
+  try {
+    const response = await fetch(TARGETS_ENDPOINT);
+    if (!response.ok) {
+      throw new Error('Failed to load targets');
+    }
+    const data = await response.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error('No targets returned');
+    }
+    availableTargets = data;
+    applyDefaultSelection(availableTargets);
+    updateTargetHint('Hover or tap the chips to see details.');
+  } catch (err) {
+    availableTargets = FALLBACK_TARGETS;
+    applyDefaultSelection(availableTargets);
+    updateTargetHint('Using fallback classes.');
+  }
+
+  renderTargetChips(availableTargets);
+  renderTargetDropdown(availableTargets);
+  updateSelectionHint();
+}
+
 async function handleFileChange(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -167,12 +310,12 @@ async function handleFileChange(event) {
   }
 }
 
-async function callDetectionApi(file, target) {
+async function callDetectionApi(file, targets) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), DETECTION_TIMEOUT);
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('target', target);
+  formData.append('targets', JSON.stringify(targets));
 
   try {
     const response = await fetch(DETECTION_API_URL, {
@@ -220,8 +363,8 @@ async function runDetection() {
   setResultMeta('Running detection...');
 
   try {
-    const target = targetSelect.value;
-    const data = await callDetectionApi(currentFile, target);
+    const targets = getSelectedTargets();
+    const data = await callDetectionApi(currentFile, targets);
     renderDetections(currentImage, data, data?.source || 'live');
   } catch (err) {
     showError(err.message);
@@ -237,6 +380,7 @@ async function runDetection() {
 function init() {
   resetCanvas();
   updateCountsPlaceholder();
+  loadTargets();
   fileInput.addEventListener('change', handleFileChange);
   detectButton.addEventListener('click', runDetection);
 }
