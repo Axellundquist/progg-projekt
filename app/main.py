@@ -11,6 +11,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from .auth import verify_request
 from .config import Settings, VideoAnalysisResult, get_settings
 from .model import model
+from .targets import GENERIC_CLASSES
 
 
 def _bytes_from_mb(mb: int) -> int:
@@ -65,6 +66,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/health")
     async def health() -> dict[str, str]:
         return {"status": "ok"}
+
+    @app.get("/targets")
+    async def targets() -> list[dict[str, str]]:
+        return [target.dict() for target in GENERIC_CLASSES]
 
     @app.post("/analyze", response_model=VideoAnalysisResult, dependencies=[Depends(verify_request)])
     async def analyze_video(

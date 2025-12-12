@@ -10,6 +10,8 @@ from fastapi.testclient import TestClient
 
 from app.main import create_app
 from app.config import Settings
+from app.model import model
+from app.targets import GENERIC_CLASSES
 
 
 def test_health_route():
@@ -42,3 +44,16 @@ def test_api_key_authentication():
     payload = response.json()
     assert payload["filename"].endswith(".mp4")
     assert "labels" in payload
+
+
+def test_targets_endpoint_and_model_labels():
+    app = create_app(Settings(api_key="secret"))
+    client = TestClient(app)
+
+    response = client.get("/targets")
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload) == len(GENERIC_CLASSES)
+    assert payload[0]["value"] == GENERIC_CLASSES[0].value
+
+    assert set(model.labels) == {target.label for target in GENERIC_CLASSES}
