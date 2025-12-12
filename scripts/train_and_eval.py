@@ -15,6 +15,7 @@ from typing import Dict, Iterable, List
 
 import yaml
 from ultralytics import YOLO
+from ultralytics.utils.checks import check_yaml
 
 
 def _load_data_config(data_path: str | Path) -> Dict:
@@ -24,11 +25,9 @@ def _load_data_config(data_path: str | Path) -> Dict:
     path is resolved relative to the working directory.
     """
 
-    data_file = Path(data_path)
-    if not data_file.exists():
-        raise FileNotFoundError(f"Could not find data config at {data_file}")
+    resolved_path = Path(check_yaml(data_path))
 
-    with data_file.open("r", encoding="utf-8") as handle:
+    with resolved_path.open("r", encoding="utf-8") as handle:
         return yaml.safe_load(handle)
 
 
@@ -219,7 +218,12 @@ def main() -> None:
     metrics = getattr(val_results, "results_dict", {}) or {}
 
     data_cfg = _load_data_config(args.data)
+    dataset_root = Path(data_cfg.get("path", "")) if data_cfg.get("path") else None
+
     val_split = Path(data_cfg.get("val"))
+    if dataset_root and not val_split.is_absolute():
+        val_split = dataset_root / val_split
+
     val_images = _list_images(val_split)
 
     counting = evaluate_counting_accuracy(
