@@ -1,0 +1,10 @@
+[
+  {
+    "ground_truth": ["cat", "cat", "dog"],
+    "predictions": ["cat", "dog", "dog"]
+  },
+  {
+    "ground_truth": ["person", "bicycle"],
+    "predictions": ["person", "bicycle"]
+  }
+]
