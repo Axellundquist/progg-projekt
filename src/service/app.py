@@ -4,7 +4,7 @@ import logging
 import time
 from typing import Dict
 
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, status
 from fastapi.responses import JSONResponse
 
 from .errors import ProcessingError, as_http_exception
@@ -39,6 +39,7 @@ async def analyze(file: UploadFile = File(...)) -> Dict[str, object]:
                 code="internal_error",
                 message="Temporary processing issue. Please retry.",
                 retry_after_seconds=5,
+                http_status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
         ) from exc
     payload["processing_time_ms"] = round((time.perf_counter() - start) * 1000, 2)
