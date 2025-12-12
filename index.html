@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detection Demo</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Demo Playground</p>
+      <h1>Object detection preview</h1>
+      <p class="subtitle">Upload an image, choose a target item, and view detected boxes.</p>
+    </div>
+    <div class="status-chip" id="statusChip">Idle</div>
+  </header>
+
+  <main class="layout">
+    <section class="card" aria-label="Upload">
+      <div class="upload-row">
+        <label for="fileInput" class="upload-label">Upload image</label>
+        <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" />
+        <button id="detectButton" class="primary">Run detection</button>
+      </div>
+      <div class="selector-row">
+        <label for="targetSelect">Item selector</label>
+        <select id="targetSelect">
+          <option value="all">All items</option>
+          <option value="person">Person</option>
+          <option value="vehicle">Vehicle</option>
+          <option value="package">Package</option>
+        </select>
+        <span class="hint">Attach an example image to get the best results.</span>
+      </div>
+      <p class="small">Supported formats: JPG, PNG, WEBP.</p>
+      <div id="errorBanner" role="alert" aria-live="polite" class="alert hidden"></div>
+    </section>
+
+    <section class="card canvas-card" aria-label="Canvas preview">
+      <div class="canvas-wrap">
+        <canvas id="previewCanvas" width="960" height="540">Your browser does not support canvas.</canvas>
+      </div>
+      <div class="legend">
+        <div class="legend-title">Counts</div>
+        <ul id="countsList"></ul>
+      </div>
+    </section>
+  </main>
+
+  <section class="card info">
+    <h2>Detection notes</h2>
+    <ul>
+      <li>Detection requests time out after 8 seconds to keep the UI responsive.</li>
+      <li>Boxes are drawn using the coordinates returned by the detection service.</li>
+      <li>If the API is unreachable you will see an error banner with troubleshooting hints.</li>
+    </ul>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
