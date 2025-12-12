@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Visual Item Detector</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Item detection pipeline</p>
+      <h1>Upload, select, detect, and export insights</h1>
+      <p class="lede">
+        Drop an image, choose the classes you care about, and run detection.
+        You can tweak the class list and re-run without uploading again.
+      </p>
+    </div>
+    <div class="hero-status" id="status-banner" aria-live="polite"></div>
+  </header>
+
+  <main class="layout">
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">Step 1</p>
+          <h2>Upload an image</h2>
+          <p class="hint">Drag & drop or use the picker. PNG and JPG are supported.</p>
+        </div>
+        <button id="clear-btn" class="ghost" type="button">Clear</button>
+      </div>
+
+      <div class="uploader" id="drop-area">
+        <div class="uploader__content">
+          <p class="uploader__title">Drag & drop your image here</p>
+          <p class="uploader__hint">or</p>
+          <label class="btn" for="file-input">Browse files</label>
+          <input id="file-input" type="file" accept="image/png,image/jpeg" hidden />
+          <p class="uploader__note" id="file-label"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">Step 2</p>
+          <h2>Choose item types</h2>
+          <p class="hint">Select the classes to include before running detection.</p>
+        </div>
+        <button id="select-all" class="ghost" type="button">Select all</button>
+      </div>
+      <div class="class-grid" id="class-grid"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">Step 3</p>
+          <h2>Detect items</h2>
+          <p class="hint">Run the detection workflow and view per-class counts.</p>
+        </div>
+        <div class="actions">
+          <button id="retry-btn" class="ghost" type="button" hidden>Retry</button>
+          <button id="detect-btn" class="btn primary" type="button">Detect items</button>
+        </div>
+      </div>
+      <div id="status-area" class="status-row" aria-live="polite"></div>
+    </section>
+
+    <section class="panel results">
+      <div class="panel-header">
+        <div>
+          <p class="eyebrow">Results</p>
+          <h2>Annotated image & metrics</h2>
+          <p class="hint">View detections and export the structured output.</p>
+        </div>
+        <button id="export-btn" class="btn" type="button" disabled>Export JSON</button>
+      </div>
+      <div class="results-grid">
+        <div class="image-stage" id="image-stage">
+          <img id="preview" alt="Uploaded preview" />
+          <canvas id="overlay" aria-hidden="true"></canvas>
+          <div class="placeholder" id="placeholder">Upload an image to view detections</div>
+        </div>
+        <div class="metrics" id="metrics"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
