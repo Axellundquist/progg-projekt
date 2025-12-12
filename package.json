@@ -1,0 +1,10 @@
+{
+  "name": "progg-projekt",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Sample project demonstrating generic class selector and synchronized backend map.",
+  "scripts": {
+    "lint": "echo 'no lint configured'",
+    "start:frontend": "npx serve frontend"
+  }
+}

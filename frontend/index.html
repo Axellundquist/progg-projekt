@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generic Class Selector</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 2rem;
+        background: #f6f7fb;
+      }
+
+      h1 {
+        margin-bottom: 0.25rem;
+      }
+
+      .selector-container {
+        background: #fff;
+        border: 1px solid #d0d7de;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+        max-width: 640px;
+      }
+
+      .help-text {
+        color: #4b5563;
+        margin-bottom: 0.75rem;
+      }
+
+      .chips {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin: 0.75rem 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .chip {
+        background: #e0f2fe;
+        color: #075985;
+        border: 1px solid #bae6fd;
+        padding: 0.35rem 0.65rem;
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        cursor: default;
+      }
+
+      .chip .remove {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: #0ea5e9;
+        font-weight: bold;
+      }
+
+      .dropdown {
+        width: 100%;
+        padding: 0.5rem;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        font-size: 1rem;
+      }
+
+      .tooltip {
+        text-decoration: underline dotted;
+        cursor: help;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Generic Classes</h1>
+    <p class="help-text">Select one or more generic classes. Hover for details.</p>
+    <div class="selector-container">
+      <label for="class-select">Add more classes</label>
+      <select id="class-select" class="dropdown"></select>
+      <ul id="selected-chips" class="chips"></ul>
+    </div>
+
+    <script type="module">
+      import { genericClasses } from "../shared/genericClasses.js";
+
+      const classSelect = document.getElementById("class-select");
+      const selectedChips = document.getElementById("selected-chips");
+
+      const defaults = ["bottle", "can", "box_carton"];
+      let selected = new Set(defaults);
+
+      function renderOptions() {
+        classSelect.innerHTML = "";
+        genericClasses.forEach(({ id, label, description }) => {
+          const option = document.createElement("option");
+          option.value = id;
+          option.textContent = `${label} — ${description}`;
+          option.title = description;
+          classSelect.appendChild(option);
+        });
+      }
+
+      function renderChips() {
+        selectedChips.innerHTML = "";
+        genericClasses
+          .filter((entry) => selected.has(entry.id))
+          .forEach(({ id, label, description }) => {
+            const li = document.createElement("li");
+            li.className = "chip";
+            li.title = description;
+
+            const text = document.createElement("span");
+            text.innerHTML = `<span class="tooltip">${label}</span>`;
+
+            const button = document.createElement("button");
+            button.className = "remove";
+            button.textContent = "×";
+            button.title = "Remove";
+            button.addEventListener("click", () => {
+              selected.delete(id);
+              renderChips();
+            });
+
+            li.appendChild(text);
+            li.appendChild(button);
+            selectedChips.appendChild(li);
+          });
+      }
+
+      function addSelectedFromDropdown() {
+        const value = classSelect.value;
+        if (value) {
+          selected.add(value);
+          renderChips();
+        }
+      }
+
+      classSelect.addEventListener("change", addSelectedFromDropdown);
+
+      renderOptions();
+      renderChips();
+    </script>
+  </body>
+</html>
