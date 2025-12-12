@@ -88,13 +88,13 @@ def split_dataset(input_root: Path, output_root: Path, train_p: float, val_p: fl
 
     for split, imgs in splits.items():
         for img in imgs:
-            label = input_root / "labels" / img.relative_to(input_root / "images")
-            label = label.with_suffix(".txt")
+            rel_img = img.relative_to(input_root / "images")
+            label = (input_root / "labels" / rel_img).with_suffix(".txt")
             if not label.exists():
                 raise SystemExit(f"Missing label for {img}")
 
-            link_or_copy(img, output_root / "images" / split / img.name, copy)
-            link_or_copy(label, output_root / "labels" / split / label.name, copy)
+            link_or_copy(img, output_root / "images" / split / rel_img, copy)
+            link_or_copy(label, output_root / "labels" / split / rel_img.with_suffix(".txt"), copy)
 
     print(f"Split complete: train={len(splits['train'])}, val={len(splits['val'])}, test={len(splits['test'])}")
 
