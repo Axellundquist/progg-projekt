@@ -1,0 +1,42 @@
+[
+  {
+    "id": "bottle",
+    "label": "Bottle",
+    "help": "Rigid beverage or product container with a narrow neck."
+  },
+  {
+    "id": "can",
+    "label": "Can",
+    "help": "Metal drink or food can."
+  },
+  {
+    "id": "box_carton",
+    "label": "Box / Carton",
+    "help": "Paperboard or corrugated packaging such as cereal boxes and cartons."
+  },
+  {
+    "id": "bag_pouch",
+    "label": "Bag / Pouch",
+    "help": "Flexible film packaging like chip bags, pouches, or plastic bags."
+  },
+  {
+    "id": "cup",
+    "label": "Cup",
+    "help": "Disposable cup for hot or cold beverages."
+  },
+  {
+    "id": "lid",
+    "label": "Lid",
+    "help": "Detachably covers cups, tubs, or containers."
+  },
+  {
+    "id": "utensil",
+    "label": "Utensil",
+    "help": "Single-use cutlery such as forks, spoons, or knives."
+  },
+  {
+    "id": "tray_plate",
+    "label": "Tray / Plate",
+    "help": "Rigid serving trays or plates."
+  }
+]
