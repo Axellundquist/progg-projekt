@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Generic Classes Selector</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 2rem;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.4rem 0.8rem;
+        margin: 0.2rem;
+        border-radius: 16px;
+        border: 1px solid #ccc;
+        cursor: pointer;
+      }
+      .chip.selected {
+        background-color: #e0f2ff;
+        border-color: #3399ff;
+      }
+      .chip span {
+        margin-left: 0.3rem;
+      }
+      .help {
+        font-size: 0.85rem;
+        color: #555;
+        margin-top: 0.5rem;
+      }
+      .dropdown {
+        margin-top: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Choose Generic Classes</h1>
+    <p>Select the classes you want to include. Hover to see details.</p>
+    <div id="chip-container"></div>
+    <div class="dropdown">
+      <label for="class-select">Add more:</label>
+      <select id="class-select" multiple size="5"></select>
+    </div>
+
+    <div class="help" id="selection-summary"></div>
+
+    <script>
+      const DEFAULT_SELECTION = ["bottle", "can", "box_carton"];
+
+      async function loadClasses() {
+        const response = await fetch("../data/generic_classes.json");
+        return response.json();
+      }
+
+      function renderChips(classes, selected, chipContainer, dropdown) {
+        chipContainer.innerHTML = "";
+        dropdown.innerHTML = "";
+
+        classes.forEach((item) => {
+          const chip = document.createElement("div");
+          chip.className = `chip ${selected.has(item.id) ? "selected" : ""}`;
+          chip.title = item.help;
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = selected.has(item.id);
+          checkbox.addEventListener("change", () => toggleSelection(item.id));
+
+          const label = document.createElement("span");
+          label.textContent = item.label;
+
+          chip.appendChild(checkbox);
+          chip.appendChild(label);
+          chipContainer.appendChild(chip);
+
+          const option = document.createElement("option");
+          option.value = item.id;
+          option.text = item.label;
+          option.title = item.help;
+          option.selected = selected.has(item.id);
+          dropdown.appendChild(option);
+        });
+      }
+
+      function updateSummary(classes, selected, summary) {
+        const selectedItems = classes.filter((item) => selected.has(item.id));
+        if (!selectedItems.length) {
+          summary.textContent = "No classes selected.";
+          return;
+        }
+
+        summary.innerHTML =
+          "Selected: " +
+          selectedItems
+            .map((item) => `<strong title="${item.help}">${item.label}</strong>`)
+            .join(", ") +
+          ".";
+      }
+
+      async function init() {
+        const chipContainer = document.getElementById("chip-container");
+        const dropdown = document.getElementById("class-select");
+        const summary = document.getElementById("selection-summary");
+        const classes = await loadClasses();
+        const selected = new Set(DEFAULT_SELECTION);
+
+        window.toggleSelection = (id) => {
+          if (selected.has(id)) {
+            selected.delete(id);
+          } else {
+            selected.add(id);
+          }
+          renderChips(classes, selected, chipContainer, dropdown);
+          updateSummary(classes, selected, summary);
+        };
+
+        dropdown.addEventListener("change", () => {
+          Array.from(dropdown.selectedOptions).forEach((option) => {
+            selected.add(option.value);
+          });
+          Array.from(dropdown.options)
+            .filter((opt) => !opt.selected)
+            .forEach((opt) => selected.delete(opt.value));
+          renderChips(classes, selected, chipContainer, dropdown);
+          updateSummary(classes, selected, summary);
+        });
+
+        renderChips(classes, selected, chipContainer, dropdown);
+        updateSummary(classes, selected, summary);
+      }
+
+      init();
+    </script>
+  </body>
+</html>
