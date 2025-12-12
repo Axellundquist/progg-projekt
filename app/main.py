@@ -77,11 +77,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             tmp.write(content)
             path = Path(tmp.name)
 
-        async def _run_analysis() -> VideoAnalysisResult:
-            return model.analyze(path)
-
         try:
-            result = await asyncio.wait_for(_run_analysis(), timeout=settings.video_process_timeout)
+            result = await asyncio.wait_for(
+                asyncio.to_thread(model.analyze, path),
+                timeout=settings.video_process_timeout,
+            )
         except asyncio.TimeoutError as exc:
             raise HTTPException(status_code=504, detail="Video processing timed out") from exc
         finally:
